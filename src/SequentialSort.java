@@ -10,7 +10,7 @@ public class SequentialSort implements Sorter {
         public void mergeSort(int[] arr, int l, int r) {
                 if (l < r) {
                         // middile point
-                        int m = l + (r + 1) / 2;
+                        int m = l + (r - 1) / 2;
 
                         // sort left and right
                         mergeSort(arr, l, m);
@@ -19,7 +19,6 @@ public class SequentialSort implements Sorter {
                         merge(arr, l, m, r);
 
                 }
-                // TODO Implement your sorting algorithm.
         }
 
         public void merge(int arr[], int l, int m, int r) {
