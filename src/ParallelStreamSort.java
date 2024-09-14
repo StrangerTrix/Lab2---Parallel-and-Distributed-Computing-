@@ -1,7 +1,9 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -25,53 +27,51 @@ import java.util.stream.IntStream;
 
 public class ParallelStreamSort implements Sorter {
         public final int threads;
+        private final int threshold = 16;
 
         public ParallelStreamSort(int threads) {
                 this.threads = threads;
         }
 
         public void sort(int[] arr) {
-                ForkJoinPool pool = new ForkJoinPool(threads);
-
+        
                 try {
-                        pool.submit(() -> {
-                            mergeSort(pool, arr, 0, arr.length - 1);
-                        }).get();
-
-
+                ForkJoinPool pool = new ForkJoinPool(threads);
+                    pool.submit(() -> {
+                        mergeSort(arr, 0, arr.length -1 );
+                    }).get(); // Wait for all tasks to finish
+                    pool.shutdown();
                 } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private void mergeSort(int[] arr, int l, int r) {
+                System.out.println("Sorting range (" + l + ", " + r + ") on thread: " + Thread.currentThread().getName());
+                try {
+                        Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
                         e.printStackTrace();
-                } finally {
-                        pool.shutdown();
                 }
-        }
-
-        private void mergeSort(ForkJoinPool pool, int[] arr, int l, int r) {
-                if (l < r) {
-                        int m = l + (r - l) / 2;
+                if (r <= l) return; // Base case for recursion
+                if (r > l) {
+                        if (r - l < threshold) {
+                                new SequentialSort().mergeSort(arr, l, r);
+                                return;
+                            }
                         
-                        try {
-                                System.out.println("Sorting range (" + l + ", " + r + ") on thread: " + Thread.currentThread().getName());
-                                Thread.sleep(1000);
-                                pool.submit(() -> {
-                                        IntStream.range(l,r).parallel().forEach(i -> {
-                                            mergeSort(pool, arr, l, m);
-                                            //mergeSort(pool, arr, m + 1, r);
-                                        });
-                                }).get();        
-                        } catch (Exception e) {
-                                e.printStackTrace();
-                        }
-
-                        /*IntStream.of(1).parallel().forEach(i -> {
-                                System.out.println("Sorting range (" + l + ", " + r + ") on thread: " + Thread.currentThread().getName());
-                                mergeSort(pool, arr, l, m);
-                                mergeSort(pool, arr, m + 1, r);
-                        });*/
-
-                        merge(arr, l, m, r);
+                            int m = l + (r - l) / 2;
+                        
+                            // Process left and right halves in parallel using parallelStream
+                            Arrays.asList(new int[][]{{l, m}, {m + 1, r}}).parallelStream().forEach(range -> {
+                                mergeSort(arr, range[0], range[1]);
+                            });
+                        
+                            merge(arr, l, m, r);
                 }
-        } 
+                
+            }
 
         private static void merge(int[] arr, int l, int m, int r) {
                         

@@ -42,12 +42,12 @@ public class ForkJoinPoolSort implements Sorter {
                 protected void compute() {
                         if (l < r) {
                                 System.out.println("Sorting range (" + l + ", " + r + ") on thread: " + Thread.currentThread().getName());
-                                try {
+                                /*try {
                                         Thread.sleep(1000);
                                 } catch (InterruptedException e) {
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
-                                }
+                                }*/
                                 int m = l + (r - l) / 2;
 
                                 Worker lTask = new Worker(arr, l , m);
