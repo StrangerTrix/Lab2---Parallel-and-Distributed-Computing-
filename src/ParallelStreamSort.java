@@ -48,12 +48,12 @@ public class ParallelStreamSort implements Sorter {
 
             private void mergeSort(int[] arr, int l, int r) {
                 System.out.println("Sorting range (" + l + ", " + r + ") on thread: " + Thread.currentThread().getName());
-                try {
+                /*try {
                         Thread.sleep(1000);
                 } catch (InterruptedException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
-                }
+                }*/
                 if (r <= l) return; // Base case for recursion
                 if (r > l) {
                         if (r - l < threshold) {
