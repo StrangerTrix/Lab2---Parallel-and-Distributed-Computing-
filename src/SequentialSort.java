@@ -25,7 +25,7 @@ public class SequentialSort implements Sorter {
                 }
         }
 
-        private static void merge(int[] arr, int l, int m, int r) {
+        public void merge(int[] arr, int l, int m, int r) {
                         
                 // sizes of 2 to-be-merged subarrays
                 int n1 = m - l + 1;
