@@ -1,115 +1,151 @@
+import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Callable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class ExecutorServiceSort implements Sorter {
+public class ExecutorServiceSort implements Sorter
+{
         private final int threads;
-        private final ExecutorService executor;
+        private static final int threshold = 512;
 
-        public ExecutorServiceSort(int threads) {
+        public ExecutorServiceSort(int threads)
+        {
                 this.threads = threads;
-                this.executor = Executors.newFixedThreadPool(threads);
-
         }
 
-
-        @Override
-        public void sort(int[] arr) {
-                if (arr == null || arr.length < 2) {
-                        return;
+        public void sort(int[] arr)
+        {
+                AtomicInteger tasks = new AtomicInteger(0); // Track number of active tasks
+                ExecutorService executor = Executors.newFixedThreadPool(threads);
+                executor.submit(new Worker(arr, 0, arr.length - 1, executor, tasks));
+                while (tasks.get() > 0) {
+                        // Wait for all tasks to finish
                 }
-                try {
-                        mergeSort(arr, 0, arr.length - 1);
-                } catch (Exception e) {
-                        e.printStackTrace();
-                } finally {
-                        executor.shutdown();
-                }
+                executor.shutdown();
         }
 
-        @Override
-        public int getThreads() {
+        public int getThreads()
+        {
                 return threads;
         }
 
-        private void mergeSort(int[] array, int i, int j) throws Exception {
-                if (i < j) {
-                        int mid = i + (j - i) / 2;
+        // Merge Sort Worker Class
+        private static class Worker implements Runnable
+        {
+                private int[] arr;
+                private int begin;
+                private int end;
+                private ExecutorService executor;
+                private AtomicInteger tasks;
 
-                        List<Future<Void>> futures = new ArrayList<>();
-
-                        futures.add(executor.submit(new Worker(array, i, mid)));
-                        for (Future<Void> future : futures) {future.get();}
-
-                        futures.add(executor.submit(new Worker(array, mid + 1, j)));
-                        for (Future<Void> future : futures) {future.get();}
-
-                        merge(array, i, mid, j);
+                Worker(int[] arr, int begin, int end, ExecutorService executor, AtomicInteger tasks)
+                {
+                        this.arr = arr;
+                        this.begin = begin;
+                        this.end = end;
+                        this.executor = executor;
+                        this.tasks = tasks;
+                        tasks.incrementAndGet();
                 }
-        }
 
-        private void merge(int[] arr, int left, int mid, int right) {
-                int n1 = mid - left + 1;
-                int n2 = right - mid;
+                public void run()
+                {
+                        if (begin >= end)  {
+                                tasks.decrementAndGet();
+                                return;
+                        }
 
-                int[] leftArray = new int[n1];
-                int[] rightArray = new int[n2];
+                        int mid = (begin + end) / 2;
 
-                System.arraycopy(arr, left, leftArray, 0, n1);
-                System.arraycopy(arr, mid + 1, rightArray, 0, n2);
+                        // If the subarray size is larger than the threshold, process in parallel
+                        boolean processLeftInParallel = (mid - begin + 1) > threshold;
+                        boolean processRightInParallel = (end - mid) > threshold;
 
-                int i = 0, j = 0, k = left;
+                        if (processLeftInParallel) {
+                                executor.submit(new Worker(arr, begin, mid, executor, tasks));
+                        }
+                        else {
+                                new Worker(arr, begin, mid, executor, tasks).run();
+                        }
 
-                while (i < n1 && j < n2) {
-                        if (leftArray[i] <= rightArray[j]) {
-                                arr[k++] = leftArray[i++];
-                        } else {
-                                arr[k++] = rightArray[j++];
+                        if (processRightInParallel) {
+                                executor.submit(new Worker(arr, mid + 1, end, executor, tasks));
+                        }
+                        else
+                        {
+                                new Worker(arr, mid + 1, end, executor, tasks).run();
+                        }
+
+
+                        merge(arr, begin, mid, end);
+
+                        tasks.decrementAndGet();
+                }
+
+
+                private void merge(int[] arr, int left, int mid, int right)
+                {
+                        int n1 = mid - left + 1;
+                        int n2 = right - mid;
+
+                        int[] leftArray = new int[n1];
+                        int[] rightArray = new int[n2];
+
+                        System.arraycopy(arr, left, leftArray, 0, n1);
+                        System.arraycopy(arr, mid + 1, rightArray, 0, n2);
+
+                        int i = 0, j = 0;
+                        int k = left;
+                        while (i < n1 && j < n2)
+                        {
+                                if (leftArray[i] <= rightArray[j])
+                                {
+                                        arr[k] = leftArray[i];
+                                        i++;
+                                }
+                                else
+                                {
+                                        arr[k] = rightArray[j];
+                                        j++;
+                                }
+                                k++;
+                        }
+
+                        while (i < n1)
+                        {
+                                arr[k] = leftArray[i];
+                                i++;
+                                k++;
+                        }
+
+                        // Copy the remaining elements of rightArray
+                        while (j < n2)
+                        {
+                                arr[k] = rightArray[j];
+                                j++;
+                                k++;
                         }
                 }
-
-                while (i < n1) {
-                        arr[k++] = leftArray[i++];
-                }
-
-                while (j < n2) {
-                        arr[k++] = rightArray[j++];
-                }
         }
 
-        private class Worker implements Callable<Void> {
-                private final int[] array;
-                private final int leftIndex;
-                private final int rightIndex;
 
-                Worker(int[] array, int leftIndex, int rightIndex) {
-                        this.array = array;
-                        this.leftIndex = leftIndex;
-                        this.rightIndex = rightIndex;
+        public static void main(String[] args) {
+                // Create an array of 10,000 random numbers
+                Random rand = new Random();
+                int[] randomNumbers = new int[1000000];
+                for (int i = 0; i < randomNumbers.length; i++) {
+                        randomNumbers[i] = rand.nextInt(100000);
                 }
 
-                @Override
-                public Void call() throws Exception {
-                        mergeSort(array, leftIndex, rightIndex);
-                        return null;
-                }
+                System.out.println("Unsorted Array (first 10 elements): " + Arrays.toString(Arrays.copyOf(randomNumbers, 10)));
+
+                // Initialize sorter with a specified number of threads
+                ExecutorServiceSort sorter = new ExecutorServiceSort(4);
+
+                // Sort the array
+                sorter.sort(randomNumbers);
+
+                System.out.println("Sorted Array (first 10 elements): " + Arrays.toString(Arrays.copyOf(randomNumbers, 10)));
         }
-
-        public static void main(String [] args) {
-                ExecutorServiceSort sorter = new ExecutorServiceSort(10);
-                int[] array = Auxiliary.arrayGenerate(1, 1000);
-                sorter.sort(array);
-                for (int i = 0; i < array.length; i++) {
-                        System.out.print(array[i] + " ");
-                }
-                System.out.println();
-        }
-
 }
-
-
-
-
