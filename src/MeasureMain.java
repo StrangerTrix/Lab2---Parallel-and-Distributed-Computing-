@@ -41,10 +41,10 @@ public class MeasureMain {
                 System.err.println("Starting Measurements");
 
                 long[] results = Auxiliary.measure(sorter, arrSize, seed, measurements);
-
+                
                 // Prints average execution time and standard deviation to stdout.
                 double[] stats = Auxiliary.statistics(results);
-                System.out.printf("%s %d %.2f %.2f\n", name, sorter.getThreads(), stats[0], stats[1]);
+                System.out.printf("%s %d mean: %.2f %.2f\n", name, sorter.getThreads(), stats[0], stats[1]);
 
                 System.err.println("Measurements done");
         }

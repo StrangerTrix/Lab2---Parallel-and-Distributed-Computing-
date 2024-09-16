@@ -41,7 +41,7 @@ public class ForkJoinPoolSort implements Sorter {
 
                 protected void compute() {
                         if (l < r) {
-                                System.out.println("Sorting range (" + l + ", " + r + ") on thread: " + Thread.currentThread().getName());
+                                //System.out.println("Sorting range (" + l + ", " + r + ") on thread: " + Thread.currentThread().getName());
                                 /*try {
                                         Thread.sleep(1000);
                                 } catch (InterruptedException e) {
@@ -49,6 +49,11 @@ public class ForkJoinPoolSort implements Sorter {
                                         e.printStackTrace();
                                 }*/
                                 int m = l + (r - l) / 2;
+
+                                if (r - l < 16) {
+                                        new SequentialSort().mergeSort(arr, l, r);
+                                        return;
+                                }
 
                                 Worker lTask = new Worker(arr, l , m);
                                 Worker rTask = new Worker(arr, m + 1, r);
