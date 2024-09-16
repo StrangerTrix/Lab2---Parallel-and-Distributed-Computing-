@@ -8,25 +8,15 @@ import java.util.List;
 public class ExecutorServiceSort implements Sorter {
         private final int threads;
         private final ExecutorService executor;
-        private static int maxDepth;
 
         public ExecutorServiceSort(int threads) {
                 this.threads = threads;
                 this.executor = Executors.newFixedThreadPool(threads);
-                this.maxDepth = this.giveMaxDepth();
-        }
-        private int giveMaxDepth() {
-                int number = this.threads;
-                int power = 0;
-                while (number > 1) {
-                        number >>= 1;
-                        power++;
-                }
-                return power;
+
         }
 
 
-        @Override
+        //@Override
         public void sort(int[] arr) {
                 if (arr == null || arr.length < 2) {
                         return;
@@ -40,7 +30,7 @@ public class ExecutorServiceSort implements Sorter {
                 }
         }
 
-        @Override
+        //@Override
         public int getThreads() {
                 return threads;
         }
@@ -49,20 +39,19 @@ public class ExecutorServiceSort implements Sorter {
                 if (i < j) {
                         int mid = i + (j - i) / 2;
 
-                        if (depth < this.maxDepth) {
+                        List<Future<Void>> futures = new ArrayList<>();
 
-                                List<Future<Void>> futures = new ArrayList<>();
-                                futures.add(executor.submit(new Worker(array, i, mid, depth + 1)));
-                                futures.add(executor.submit(new Worker(array, mid + 1, j, depth + 1)));
+                        futures.add(executor.submit(new Worker(array, i, mid, depth + 1)));
 
-                                for (Future<Void> future : futures) {
-                                        future.get();
-                                }
+                        for (Future<Void> future : futures)
+                        {
+                                future.get();
+                        }
 
-                        } else {
+                        futures.add(executor.submit(new Worker(array, mid + 1, j, depth + 1)));
 
-                                sequentialSort(array, i, mid);
-                                sequentialSort(array, mid + 1, j);
+                        for (Future<Void> future : futures) {
+                                future.get();
                         }
 
                         merge(array, i, mid, j);
