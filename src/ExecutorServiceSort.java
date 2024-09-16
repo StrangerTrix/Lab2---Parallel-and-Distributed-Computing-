@@ -16,13 +16,13 @@ public class ExecutorServiceSort implements Sorter {
         }
 
 
-        //@Override
+        @Override
         public void sort(int[] arr) {
                 if (arr == null || arr.length < 2) {
                         return;
                 }
                 try {
-                        mergeSort(arr, 0, arr.length - 1, 0);
+                        mergeSort(arr, 0, arr.length - 1);
                 } catch (Exception e) {
                         e.printStackTrace();
                 } finally {
@@ -30,39 +30,23 @@ public class ExecutorServiceSort implements Sorter {
                 }
         }
 
-        //@Override
+        @Override
         public int getThreads() {
                 return threads;
         }
 
-        private void mergeSort(int[] array, int i, int j, int depth) throws Exception {
+        private void mergeSort(int[] array, int i, int j) throws Exception {
                 if (i < j) {
                         int mid = i + (j - i) / 2;
 
                         List<Future<Void>> futures = new ArrayList<>();
 
-                        futures.add(executor.submit(new Worker(array, i, mid, depth + 1)));
+                        futures.add(executor.submit(new Worker(array, i, mid)));
+                        for (Future<Void> future : futures) {future.get();}
 
-                        for (Future<Void> future : futures)
-                        {
-                                future.get();
-                        }
+                        futures.add(executor.submit(new Worker(array, mid + 1, j)));
+                        for (Future<Void> future : futures) {future.get();}
 
-                        futures.add(executor.submit(new Worker(array, mid + 1, j, depth + 1)));
-
-                        for (Future<Void> future : futures) {
-                                future.get();
-                        }
-
-                        merge(array, i, mid, j);
-                }
-        }
-
-        private void sequentialSort(int[] array, int i, int j) {
-                if (i < j) {
-                        int mid = i + (j - i) / 2;
-                        sequentialSort(array, i, mid);
-                        sequentialSort(array, mid + 1, j);
                         merge(array, i, mid, j);
                 }
         }
@@ -100,18 +84,16 @@ public class ExecutorServiceSort implements Sorter {
                 private final int[] array;
                 private final int leftIndex;
                 private final int rightIndex;
-                private final int depth;
 
-                Worker(int[] array, int leftIndex, int rightIndex, int depth) {
+                Worker(int[] array, int leftIndex, int rightIndex) {
                         this.array = array;
                         this.leftIndex = leftIndex;
                         this.rightIndex = rightIndex;
-                        this.depth = depth;
                 }
 
                 @Override
                 public Void call() throws Exception {
-                        mergeSort(array, leftIndex, rightIndex, depth);
+                        mergeSort(array, leftIndex, rightIndex);
                         return null;
                 }
         }
