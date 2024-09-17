@@ -71,8 +71,6 @@ S_{16,n} =\frac{64+16\log_2\left(\frac{n}{16}\right)}{30+\log_2\left(\frac{n}{16
 
 ![amdahl's law plot](data/amdahl.png)
 
-We see that ...
-
 ## Task 3: ExecutorServiceSort
 Due to the reason that Java's executor service can not easily manage recursive calls. Our solution is to divide the sub tasks before calling the workers. Using the method splitArray(), an arraylist containing evenly-distributed subarrays' indexes in the unsorted array will be returned(based on the number of threads). This is further used to call workers to sort subarrays concurrently. Our first version is that, after terminating the executor, the unsorted array is modified into an array with X(number of threads) sorted subrrays. In the end these subarrays will be merged one by one. However this is time consuming. Therefore, we call another ExecutorService, and make it merge the subarrays concurrently.
 
