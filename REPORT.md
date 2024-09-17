@@ -58,15 +58,17 @@ S_{s,n} =\frac{1}{\left( \sum_{0}^{\log_2(s)-1}\frac{\left( {\frac{1}{2}} \right
 \]
 To answer the question, here is  Amdahl's law for the merge sort algorithm with 4, 8, and 16 threads respectively (according to the precedence formula),
 
+
 \[
 S_{4,n} =\frac{8+4\log_2\left(\frac{n}{4}\right)}{6+\log_2\left(\frac{n}{4}\right)}
 \]
 \[
-S_{8,n} = ...
+S_{8,n} =\frac{24+8\log_2\left(\frac{n}{8}\right)}{14+\log_2\left(\frac{n}{4}\right)}
 \]
 \[
-S_{16,n} = ...
+S_{16,n} =\frac{64+16\log_2\left(\frac{n}{16}\right)}{30+\log_2\left(\frac{n}{16}\right)}
 \]
+
 ![amdahl's law plot](data/amdahl.png)
 
 We see that ...
