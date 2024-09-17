@@ -86,7 +86,7 @@ Source files:
 - `ForkJoinPoolSort.java`
 
 ## Task 5: ParallelStreamSort
-This task was a bit tricky and took some time for us to think about. Our solution is, like ExecutorServiceSort, make the indexes as parallel streams, each pair of the indexes, say (l, m) and (m+1, r), will be used to call merge sort concurrently. 
+This task was a bit tricky and took some time for us to think about. Since there's no necessarity to process elements one by one, even if it's concurrently. Our solution is, like ExecutorServiceSort, make the indexes as parallel streams. Each pair of the indexes, say (l, r), will be divided into two pairs, (l, m) and (m+1, r), by calling merge sort on each of them, thanks to the parallel stream, would process them recursively and concurrently. 
 
 Source files:
 
