@@ -35,15 +35,17 @@ public class ExecutorServiceSort implements Sorter {
             System.err.println("Thread interrupted or execution error: " + e.getMessage());
         }
 
-        ExecutorService executor1 = Executors.newFixedThreadPool(threads);
-
         futures = new ArrayList<>();
         
         int numSubarrays = indexes.length;
+
         while (numSubarrays > 1) {
+            ExecutorService executor1 = Executors.newFixedThreadPool(threads);
+
             int newNumSubarrays = (numSubarrays + 1) / 2;
 
             for (int i = 0; i < newNumSubarrays; i++) {
+
                 if (2 * i + 1 < numSubarrays) {
                     int l = indexes[2 * i][0];
                     int m = indexes[2 * i][1];
@@ -53,12 +55,12 @@ public class ExecutorServiceSort implements Sorter {
                         new SequentialSort().merge(arr, l, m, r);
                     }));
 
+                    indexes[i][0] = l;
                     indexes[i][1] = r;
                 } else {
                     indexes[i] = indexes[2 * i];
                 }
             }
-
             
             // Wait for all merges in this step to complete
             for (Future<?> future : futures) {
@@ -71,10 +73,11 @@ public class ExecutorServiceSort implements Sorter {
                 }
             }
 
-                numSubarrays = newNumSubarrays;
-                futures.clear();
+            numSubarrays = newNumSubarrays;
+            futures.clear();
+            executor1.shutdown();
         }
-        executor1.shutdown();
+        //new SequentialSort().merge(arr, 0, (arr.length)/2, arr.length-1);
         // Merge the sorted subarrays
         /*for (int i = 1; i < indexes.length; i++) {
             new SequentialSort().merge(arr, indexes[0][0], indexes[i - 1][1], indexes[i][1]);
@@ -121,7 +124,7 @@ public class ExecutorServiceSort implements Sorter {
 
     public static void main(String[] args) {
         Random rand = new Random();
-        int[] randomNumbers = new int[25];
+        int[] randomNumbers = new int[1000];
         for (int i = 0; i < randomNumbers.length; i++) {
             randomNumbers[i] = rand.nextInt(100);
         }
@@ -129,11 +132,12 @@ public class ExecutorServiceSort implements Sorter {
         System.out.println("Unsorted Array (first 10 elements): "
                 + Arrays.toString(Arrays.copyOf(randomNumbers, 25)));
 
-        ExecutorServiceSort sorter = new ExecutorServiceSort(4);
+        ExecutorServiceSort sorter = new ExecutorServiceSort(8);
 
         sorter.sort(randomNumbers);
 
         System.out.println("Sorted Array (first 10 elements): "
                 + Arrays.toString(Arrays.copyOf(randomNumbers, 25)));
+
     }
 }
