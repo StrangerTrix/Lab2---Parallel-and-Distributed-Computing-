@@ -72,7 +72,7 @@ S_{16,n} = ...
 We see that ...
 
 ## Task 3: ExecutorServiceSort
-Due to the reason that Java's executor service can not easily manage recursive calls. Our solution is to divide the sub tasks before calling the workers. Using the method splitArray(), an arraylist containing evenly-distributed subarrays' indexes in the unsorted array will be returned(based on the number of threads). This is further used to call workers to sort subarrays concurrently. After terminating the executor, the unsorted array is modified into an array with X(number of threads) sorted subrrays. In the end these subarrays will be merged one by one.
+Due to the reason that Java's executor service can not easily manage recursive calls. Our solution is to divide the sub tasks before calling the workers. Using the method splitArray(), an arraylist containing evenly-distributed subarrays' indexes in the unsorted array will be returned(based on the number of threads). This is further used to call workers to sort subarrays concurrently. Our first version is that, after terminating the executor, the unsorted array is modified into an array with X(number of threads) sorted subrrays. In the end these subarrays will be merged one by one. However this is time consuming. Therefore, we call another ExecutorService, and make it merge the subarrays concurrently.
 
 Source files:
 
@@ -94,8 +94,8 @@ Source files:
 
 ## Task 6: Performance measurements with PDC
 
-We decided to sort 10,000,000 integers ...
+As required, we ran the parallel sort methods and sequential sort method on pdc using 2, 4, 8, 16, 32, 48, 96 threads, with 10,000,000 elements. The result is shown below:
 
 ![pdc plot](data/pdc.png)
 
-We see that ...
+We see that all sort methods work as intended except ExecutorServiceSort. The reason is that the method sorts the sorted subarrays one by one in the end. With this many elements and threads, its very time consuming. ForkJoinPoolSort and ParallelStreamSort use about the same time, ExecutorServiveSort is performing better when the number of threads is under 32 thanks to partial parallel merge, but no longer when the number of threads increases. However, all sort methods worked as expected. the problem of executorServiceSort was already found when implementing. Among all sort method, ForkJoinPoolSort is easiest to implement, since it is designed for such algorithm like merge sort.

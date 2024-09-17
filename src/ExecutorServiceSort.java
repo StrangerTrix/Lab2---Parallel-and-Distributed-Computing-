@@ -77,7 +77,6 @@ public class ExecutorServiceSort implements Sorter {
             futures.clear();
             executor1.shutdown();
         }
-        //new SequentialSort().merge(arr, 0, (arr.length)/2, arr.length-1);
         // Merge the sorted subarrays
         /*for (int i = 1; i < indexes.length; i++) {
             new SequentialSort().merge(arr, indexes[0][0], indexes[i - 1][1], indexes[i][1]);
