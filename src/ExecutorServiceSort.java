@@ -23,6 +23,7 @@ public class ExecutorServiceSort implements Sorter {
         }
 
         executor.shutdown();
+
         try {
             // Wait for all tasks to complete
             for (Future<?> future : futures) {
@@ -34,10 +35,50 @@ public class ExecutorServiceSort implements Sorter {
             System.err.println("Thread interrupted or execution error: " + e.getMessage());
         }
 
-        // Merge the sorted subarrays
-        for (int i = 1; i < indexes.length; i++) {
-            new SequentialSort().merge(arr, indexes[0][0], indexes[i - 1][1], indexes[i][1]);
+        ExecutorService executor1 = Executors.newFixedThreadPool(threads);
+
+        futures = new ArrayList<>();
+        
+        int numSubarrays = indexes.length;
+        while (numSubarrays > 1) {
+            int newNumSubarrays = (numSubarrays + 1) / 2;
+
+            for (int i = 0; i < newNumSubarrays; i++) {
+                if (2 * i + 1 < numSubarrays) {
+                    int l = indexes[2 * i][0];
+                    int m = indexes[2 * i][1];
+                    int r = indexes[2 * i + 1][1];
+
+                    futures.add(executor1.submit(() -> {
+                        new SequentialSort().merge(arr, l, m, r);
+                    }));
+
+                    indexes[i][1] = r;
+                } else {
+                    indexes[i] = indexes[2 * i];
+                }
+            }
+
+            
+            // Wait for all merges in this step to complete
+            for (Future<?> future : futures) {
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    executor.shutdownNow();
+                    Thread.currentThread().interrupt();
+                    System.err.println("Thread interrupted or execution error: " + e.getMessage());
+                }
+            }
+
+                numSubarrays = newNumSubarrays;
+                futures.clear();
         }
+        executor1.shutdown();
+        // Merge the sorted subarrays
+        /*for (int i = 1; i < indexes.length; i++) {
+            new SequentialSort().merge(arr, indexes[0][0], indexes[i - 1][1], indexes[i][1]);
+        }*/
     }
 
     public int getThreads() {
