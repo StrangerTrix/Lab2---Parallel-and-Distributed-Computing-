@@ -9,6 +9,7 @@ import java.util.concurrent.RecursiveAction;
 
 public class ForkJoinPoolSort implements Sorter {
         public final int threads;
+        private static final int threshold = 16;
 
         public ForkJoinPoolSort(int threads) {
                 this.threads = threads;
@@ -30,7 +31,6 @@ public class ForkJoinPoolSort implements Sorter {
                 private final int[] arr;
                 private final int l;
                 private final int r;
-                private static final int threshold = 16;
                 // TODO: change to sequentialSort when threshold is met
                 
                 Worker(int[] arr, int l, int r) {
@@ -50,7 +50,7 @@ public class ForkJoinPoolSort implements Sorter {
                                 }*/
                                 int m = l + (r - l) / 2;
 
-                                if (r - l < 16) {
+                                if (r - l < threshold) {
                                         new SequentialSort().mergeSort(arr, l, r);
                                         return;
                                 }

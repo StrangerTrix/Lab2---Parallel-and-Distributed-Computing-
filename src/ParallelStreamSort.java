@@ -54,7 +54,6 @@ public class ParallelStreamSort implements Sorter {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                 }*/
-                if (r <= l) return; // Base case for recursion
                 if (r > l) {
                         if (r - l < threshold) {
                                 new SequentialSort().mergeSort(arr, l, r);
