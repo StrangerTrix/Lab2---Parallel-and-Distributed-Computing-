@@ -1,3 +1,8 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
 # Lab 2 - Java Parallel Programming and Sorting Algorithms
 - Group 6
 - Dussud, Simon and Wang, Carl
@@ -21,22 +26,22 @@ Let’s start with 2 threads to understand the reasoning and be able to generali
 ![two threads amdahl's law sketch](data/2threadsAmdahl.png)
 So for two threads, we have the following:
 
-\[
+$$
 p = \frac{2 \cdot \frac{n}{2}  \log_2\left(\frac{n}{2}\right)}{n + 2 \cdot \frac{n}{2}  \log_2\left(\frac{n}{2}\right)} = \frac{\log_2\left(\frac{n}{2}\right)}{1 + \log_2\left(\frac{n}{2}\right)},
-\]
+$$
 
-\[
+$$
 1-p = \frac{n}{n + 2 \cdot \frac{n}{2}  \log_2\left(\frac{n}{2}\right)} = \frac{1}{1 + \log_2\left(\frac{n}{2}\right)},
-\]
+$$
 
-\[
+$$
 S_{2,n} = \frac{1}{1-p+ \frac{p}{2}} = \frac{1}{\frac{1}{1 + \log_2\left(\frac{n}{2}\right)}+\frac{\log_2\left(\frac{n}{2}\right)}{2\left( 1 + \log_2\left(\frac{n}{2}\right) \right) }}
-\]
+$$
 
-\[
+$$
 \textcolor{red}{\underline{ \textcolor{black}{S_{2,n}  = \frac{2 + 2\log_2\left(\frac{n}{2}\right)}{2 + \log_2\left(\frac{n}{2}\right)}}}
 }
-\]
+$$
 
 #### For s threads
 
@@ -44,30 +49,30 @@ Let’s assume first that there exists $p$ such that $s = 2^p$ to simplify the r
 
 So for s threads, we have the following:
 
-\[
+$$
 \forall i \in [0, \log_2(s) - 1], \, p_i =\frac{n}{n\log_2\left(s\right)+n\log_2\left(\frac{n}{s}\right)}=\frac{1}{\log_2\left(s\right)+\log_2\left(\frac{n}{s}\right)},
-\]
-\[
+$$
+$$
 \text{For } i = \log_2(s), \, p_i =\frac{n\log_2\left(\frac{n}{s}\right)}{n\log_2\left(s\right)+n\log_2\left(\frac{n}{s}\right)}=\frac{\log_2\left(\frac{n}{s}\right)}{\log_2\left(s\right)+\log_2\left(\frac{n}{s}\right)}
-\]
-\[
+$$
+$$
 S_{s,n} =\frac{1}{\left( \sum_{0}^{\log_2(s)-1}\frac{\left( {\frac{1}{2}} \right)^i}{\log_2\left(s\right)+\log_2\left(\frac{n}{s}\right)} \right)+\frac{\frac{1}{s}\log_2\left(\frac{n}{s}\right)}{\log_2\left(s\right)+\log_2\left(\frac{n}{s}\right)}},
-\]
-\[
+$$
+$$
 \textcolor{red}{\underline{ \textcolor{black}{S_{s,n} =\frac{\log_2\left(s\right)+\log_2\left(\frac{n}{s}\right)}{2-\left( \frac{1}{2} \right)^{\log_2\left( s \right)-1}+\frac{1}{s}\log_2\left(\frac{n}{s}\right)}}}}
-\]
+$$
 To answer the question, here is  Amdahl's law for the merge sort algorithm with 4, 8, and 16 threads respectively (according to the precedence formula),
 
 
-\[
+$$
 S_{4,n} =\frac{8+4\log_2\left(\frac{n}{4}\right)}{6+\log_2\left(\frac{n}{4}\right)}
-\]
-\[
+$$
+$$
 S_{8,n} =\frac{24+8\log_2\left(\frac{n}{8}\right)}{14+\log_2\left(\frac{n}{4}\right)}
-\]
-\[
+$$
+$$
 S_{16,n} =\frac{64+16\log_2\left(\frac{n}{16}\right)}{30+\log_2\left(\frac{n}{16}\right)}
-\]
+$$
 
 ![amdahl's law plot](data/amdahl.png)
 
